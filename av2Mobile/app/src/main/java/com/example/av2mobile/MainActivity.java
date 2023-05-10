@@ -21,12 +21,17 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
     public Button btBRLtoUSD, btUSDtoBRL;
     public TextView txtConsulta;
     public EditText inputVal;
+    String moeda = null;
+    String _inputVal = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(!TextUtils.isEmpty(inputVal.getText().toString())){
+                    _inputVal = inputVal.getText().toString();
+                    moeda = "BRLUSD";
                     MyTask task = new MyTask();
                     String urlApi = "https://economia.awesomeapi.com.br/last/BRL-USD";
                     task.execute(urlApi);
@@ -55,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(!TextUtils.isEmpty(inputVal.getText().toString())){
+                    _inputVal = inputVal.getText().toString();
+                    moeda = "USDBRL";
                     MyTask task = new MyTask();
                     String urlApi = "https://economia.awesomeapi.com.br/last/USD-BRL";
                     task.execute(urlApi);
@@ -115,13 +124,26 @@ public class MainActivity extends AppCompatActivity {
 
             try{
                 JSONObject jsonObject = new JSONObject(s);
-                cotacao = jsonObject.getJSONObject("BRLUSD").getString("high").toString();
+                cotacao = jsonObject.getJSONObject(moeda).getString("high").toString();
 
             }catch (JSONException e){
                 Toast.makeText(MainActivity.this, "erro", Toast.LENGTH_SHORT).show();
             }
 
-            txtConsulta.setText(s + "\n-> "+cotacao);
+            txtConsulta.setText(s +"\n\n"+ cotacao);
+
+            DecimalFormat df = new DecimalFormat("##,###.##");
+            if(Objects.equals(moeda, "USDBRL")){
+
+                txtConsulta.setText("$" + _inputVal + " = " + "R$" + df.format((Double.parseDouble(cotacao) * Double.parseDouble(_inputVal))));
+            }
+            else if(Objects.equals(moeda, "BRLUSD")){
+                txtConsulta.setText("R$" + _inputVal + " = " + "$" + df.format((Double.parseDouble(cotacao) * Double.parseDouble(_inputVal))));
+            }
+            else{
+                txtConsulta.setText("erro");
+            }
+
         }
     }
 }
